@@ -207,7 +207,7 @@ RuleWeaver returns a 400 Bad Request with a deterministic and frontend-friendly 
   "errors": [
     {
       "property": "Age",
-      "errors": [
+      "violations": [
         {
           "rule": "MinValue",
           "message": "Not allowed for under 18."
@@ -216,7 +216,7 @@ RuleWeaver returns a 400 Bad Request with a deterministic and frontend-friendly 
     },
     {
       "property": "Password",
-      "errors": [
+      "violations": [
         {
           "rule": "MinLength",
           "message": "Length must be at least 8 characters."

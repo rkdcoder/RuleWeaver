@@ -4,12 +4,12 @@
     {
         public string Property { get; }
 
-        public List<ValidationFailure> Errors { get; }
+        public List<ValidationFailure> Violations { get; }
 
-        public ValidationErrorDetail(string property, List<ValidationFailure> errors)
+        public ValidationErrorDetail(string property, List<ValidationFailure> violations)
         {
             Property = property;
-            Errors = errors;
+            Violations = violations;
         }
     }
 }

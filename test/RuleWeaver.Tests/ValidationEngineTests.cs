@@ -61,7 +61,7 @@ namespace RuleWeaver.Tests
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
 
-            var failure = errorDetail.Errors.First();
+            var failure = errorDetail.Violations.First();
             Assert.Equal("MinValue", failure.Rule);
             Assert.Equal("You are too young.", failure.Message);
         }
@@ -82,7 +82,7 @@ namespace RuleWeaver.Tests
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
 
-            var failure = errorDetail.Errors.First();
+            var failure = errorDetail.Violations.First();
             Assert.Equal("MinValue", failure.Rule);
             Assert.Contains("Value must be at least 18.", failure.Message);
         }
@@ -102,7 +102,7 @@ namespace RuleWeaver.Tests
             var errorDetail = result.FirstOrDefault(x => x.Property == "Username");
             Assert.NotNull(errorDetail);
 
-            var failure = errorDetail.Errors.First();
+            var failure = errorDetail.Violations.First();
             Assert.Equal("SilentFail", failure.Rule);
             Assert.Equal("Error in SilentFail", failure.Message);
         }
@@ -128,13 +128,13 @@ namespace RuleWeaver.Tests
 
             var errorDetail = result.First();
             Assert.Equal("Password", errorDetail.Property);
-            Assert.Equal(2, errorDetail.Errors.Count);
+            Assert.Equal(2, errorDetail.Violations.Count);
 
-            Assert.Equal("MinLength", errorDetail.Errors[0].Rule);
-            Assert.Contains("Length must be at least 8 characters.", errorDetail.Errors[0].Message);
+            Assert.Equal("MinLength", errorDetail.Violations[0].Rule);
+            Assert.Contains("Length must be at least 8 characters.", errorDetail.Violations[0].Message);
 
-            Assert.Equal("Regex", errorDetail.Errors[1].Rule);
-            Assert.Equal("Needs number", errorDetail.Errors[1].Message);
+            Assert.Equal("Regex", errorDetail.Violations[1].Rule);
+            Assert.Equal("Needs number", errorDetail.Violations[1].Message);
         }
 
         [Fact]
