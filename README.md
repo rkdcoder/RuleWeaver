@@ -207,13 +207,24 @@ RuleWeaver returns a 400 Bad Request with a deterministic and frontend-friendly 
   "errors": [
     {
       "property": "Age",
-      "messages": ["Not allowed for under 18."]
+      "errors": [
+        {
+          "rule": "MinValue",
+          "message": "Not allowed for under 18."
+        }
+      ]
     },
     {
       "property": "Password",
-      "messages": [
-        "Length must be at least 8 characters.",
-        "Needs at least one number"
+      "errors": [
+        {
+          "rule": "MinLength",
+          "message": "Length must be at least 8 characters."
+        },
+        {
+          "rule": "Regex",
+          "message": "Needs at least one number"
+        }
       ]
     }
   ]

@@ -17,6 +17,7 @@ namespace RuleWeaver.Tests
         private class SilentFailRule : IValidationRule
         {
             public string Name => "SilentFail";
+
             public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
             {
                 return new ValueTask<RuleResult>(RuleResult.Failure(""));
@@ -59,7 +60,10 @@ namespace RuleWeaver.Tests
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
-            Assert.Contains("You are too young.", errorDetail.Messages);
+
+            var failure = errorDetail.Errors.First();
+            Assert.Equal("MinValue", failure.Rule);
+            Assert.Equal("You are too young.", failure.Message);
         }
 
         [Fact]
@@ -77,7 +81,10 @@ namespace RuleWeaver.Tests
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
-            Assert.Contains("Value must be at least 18.", errorDetail.Messages);
+
+            var failure = errorDetail.Errors.First();
+            Assert.Equal("MinValue", failure.Rule);
+            Assert.Contains("Value must be at least 18.", failure.Message);
         }
 
         [Fact]
@@ -94,7 +101,10 @@ namespace RuleWeaver.Tests
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Username");
             Assert.NotNull(errorDetail);
-            Assert.Contains("Error in SilentFail", errorDetail.Messages);
+
+            var failure = errorDetail.Errors.First();
+            Assert.Equal("SilentFail", failure.Rule);
+            Assert.Equal("Error in SilentFail", failure.Message);
         }
 
         [Fact]
@@ -118,10 +128,13 @@ namespace RuleWeaver.Tests
 
             var errorDetail = result.First();
             Assert.Equal("Password", errorDetail.Property);
-            Assert.Equal(2, errorDetail.Messages.Count);
+            Assert.Equal(2, errorDetail.Errors.Count);
 
-            Assert.Contains("Length must be at least 8 characters.", errorDetail.Messages);
-            Assert.Contains("Needs number", errorDetail.Messages);
+            Assert.Equal("MinLength", errorDetail.Errors[0].Rule);
+            Assert.Contains("Length must be at least 8 characters.", errorDetail.Errors[0].Message);
+
+            Assert.Equal("Regex", errorDetail.Errors[1].Rule);
+            Assert.Equal("Needs number", errorDetail.Errors[1].Message);
         }
 
         [Fact]

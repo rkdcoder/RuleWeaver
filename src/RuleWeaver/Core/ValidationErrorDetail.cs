@@ -2,13 +2,14 @@
 {
     public class ValidationErrorDetail
     {
-        public string Property { get; set; } = string.Empty;
-        public List<string> Messages { get; set; } = new();
+        public string Property { get; }
 
-        public ValidationErrorDetail(string property, List<string> messages)
+        public List<ValidationFailure> Errors { get; }
+
+        public ValidationErrorDetail(string property, List<ValidationFailure> errors)
         {
             Property = property;
-            Messages = messages;
+            Errors = errors;
         }
     }
 }

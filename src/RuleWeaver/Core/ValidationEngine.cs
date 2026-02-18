@@ -28,7 +28,8 @@ namespace RuleWeaver.Core
                 if (prop == null) continue;
 
                 var value = prop.GetValue(model);
-                var currentPropertyMessages = new List<string>();
+
+                var currentPropertyErrors = new List<ValidationFailure>();
 
                 foreach (var step in propPlan.Steps)
                 {
@@ -42,17 +43,19 @@ namespace RuleWeaver.Core
                                 ? step.CustomErrorMessage
                                 : (!string.IsNullOrWhiteSpace(result.ErrorMessage) ? result.ErrorMessage : $"Error in {step.RuleName}");
 
-                            if (!currentPropertyMessages.Contains(finalMessage))
+                            var failure = new ValidationFailure(step.RuleName, finalMessage);
+
+                            if (!currentPropertyErrors.Any(f => f.Rule == failure.Rule && f.Message == failure.Message))
                             {
-                                currentPropertyMessages.Add(finalMessage);
+                                currentPropertyErrors.Add(failure);
                             }
                         }
                     }
                 }
 
-                if (currentPropertyMessages.Count > 0)
+                if (currentPropertyErrors.Count > 0)
                 {
-                    errorsList.Add(new ValidationErrorDetail(propPlan.PropertyName, currentPropertyMessages));
+                    errorsList.Add(new ValidationErrorDetail(propPlan.PropertyName, currentPropertyErrors));
                 }
             }
 
