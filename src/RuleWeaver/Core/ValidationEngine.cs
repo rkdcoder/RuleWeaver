@@ -19,7 +19,6 @@ namespace RuleWeaver.Core
             if (model is null) return errorsList;
 
             var plans = _cache.GetPlanForType(model.GetType());
-
             if (plans.Count == 0) return errorsList;
 
             foreach (var propPlan in plans)
@@ -28,11 +27,26 @@ namespace RuleWeaver.Core
                 if (prop == null) continue;
 
                 var value = prop.GetValue(model);
-
-                var currentPropertyErrors = new List<ValidationFailure>();
+                var currentPropertyViolations = new List<ValidationFailure>();
 
                 foreach (var step in propPlan.Steps)
                 {
+                    if (step.RuleName.Equals("Nested", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (value != null)
+                        {
+                            var childErrors = await ValidateAsync(value);
+
+                            foreach (var childError in childErrors)
+                            {
+                                var newPropertyName = $"{propPlan.PropertyName}.{childError.Property}";
+
+                                errorsList.Add(new ValidationErrorDetail(newPropertyName, childError.Violations));
+                            }
+                        }
+                        continue; 
+                    }
+
                     if (_rulesMap.TryGetValue(step.RuleName, out var ruleImplementation))
                     {
                         var result = await ruleImplementation.ValidateAsync(value, step.Args);
@@ -40,22 +54,21 @@ namespace RuleWeaver.Core
                         if (!result.IsValid)
                         {
                             string finalMessage = !string.IsNullOrWhiteSpace(step.CustomErrorMessage)
-                                ? step.CustomErrorMessage
-                                : (!string.IsNullOrWhiteSpace(result.ErrorMessage) ? result.ErrorMessage : $"Error in {step.RuleName}");
+                                       ? step.CustomErrorMessage
+                                       : (!string.IsNullOrWhiteSpace(result.ErrorMessage) ? result.ErrorMessage : $"Error in {step.RuleName}");
 
                             var failure = new ValidationFailure(step.RuleName, finalMessage);
-
-                            if (!currentPropertyErrors.Any(f => f.Rule == failure.Rule && f.Message == failure.Message))
+                            if (!currentPropertyViolations.Any(f => f.Rule == failure.Rule && f.Message == failure.Message))
                             {
-                                currentPropertyErrors.Add(failure);
+                                currentPropertyViolations.Add(failure);
                             }
                         }
                     }
                 }
 
-                if (currentPropertyErrors.Count > 0)
+                if (currentPropertyViolations.Count > 0)
                 {
-                    errorsList.Add(new ValidationErrorDetail(propPlan.PropertyName, currentPropertyErrors));
+                    errorsList.Add(new ValidationErrorDetail(propPlan.PropertyName, currentPropertyViolations));
                 }
             }
 

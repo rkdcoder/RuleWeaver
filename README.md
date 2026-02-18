@@ -45,7 +45,7 @@ dotnet add package RuleWeaver
 In your Program.cs, register the service.
 The parameter typeof(Program).Assembly allows RuleWeaver to discover custom rules in your project.
 
-```C#
+```csharp
 using RuleWeaver.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -61,7 +61,7 @@ builder.Services.AddControllers();
 
 Create the class you want to validate.
 
-```C#
+```csharp
 public class CustomerRequest
 {
     public string Name { get; set; }
@@ -110,7 +110,7 @@ Use the RuleWeaver section to map your classes and properties.
 Add the [WeaveValidation] attribute to your Action.
 The engine will validate the object before entering the method.
 
-```C#
+```csharp
 using Microsoft.AspNetCore.Mvc;
 using RuleWeaver.Attributes;
 
@@ -155,7 +155,7 @@ Create a class implementing IValidationRule.
 
 Note: RuleWeaver uses ValueTask<RuleResult> to support high-performance async validations.
 
-```C#
+```csharp
 using RuleWeaver.Abstractions;
 using System.Threading.Tasks;
 
@@ -193,6 +193,69 @@ In JSON:
 "Email": [
   { "RuleName": "UniqueEmail" }
 ]
+```
+
+---
+
+## 🪆 Validating Nested Objects
+
+RuleWeaver supports deep validation for complex objects using the special rule `"Nested"`.
+To validate a child object (e.g., an `Address` inside a `Customer`), you must explicitly tell the engine to dive into that property.
+
+### 1. The Model Structure
+
+```csharp
+public class AddressDto
+{
+    public string Street { get; set; }
+    public string ZipCode { get; set; }
+}
+
+public class CustomerRequest
+{
+    public string Name { get; set; }
+    public AddressDto BillingAddress { get; set; } // <--- Complex Object
+}
+
+```
+
+### 2. The Configuration
+
+Define the rules for the child object (AddressDto) at the root level of the configuration, just like any other class. Then, in the parent class (CustomerRequest), apply the Nested rule.
+
+```json
+{
+  "RuleWeaver": {
+    "CustomerRequest": {
+      "Name": [{ "RuleName": "Required" }],
+      "BillingAddress": [
+        { "RuleName": "Required" }, // Ensure object is not null
+        { "RuleName": "Nested" } // <--- Triggers deep validation
+      ]
+    },
+    // Rules for the child object are defined separately
+    "AddressDto": {
+      "Street": [{ "RuleName": "Required" }],
+      "ZipCode": [{ "RuleName": "MinLength", "RuleParameter": "8" }]
+    }
+  }
+}
+```
+
+### 3. The Result
+
+Errors in nested properties are automatically flattened using Dot Notation, making it easy for frontends to map errors to fields.
+
+```json
+{
+  "property": "BillingAddress.Street",
+  "violations": [
+    {
+      "rule": "Required",
+      "message": "This field is required."
+    }
+  ]
+}
 ```
 
 ---

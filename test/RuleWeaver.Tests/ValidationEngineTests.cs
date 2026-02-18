@@ -7,6 +7,7 @@ namespace RuleWeaver.Tests
 {
     public class ValidationEngineTests
     {
+        // --- DTOs simple ---
         private class UserProfile
         {
             public int Age { get; set; }
@@ -14,10 +15,23 @@ namespace RuleWeaver.Tests
             public string? Password { get; set; }
         }
 
+        // --- DTOs Nested ---
+        private class Address
+        {
+            public string? Street { get; set; }
+            public string? ZipCode { get; set; }
+        }
+
+        private class Customer
+        {
+            public string? Name { get; set; }
+            public Address? BillingAddress { get; set; }
+        }
+
+
         private class SilentFailRule : IValidationRule
         {
             public string Name => "SilentFail";
-
             public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
             {
                 return new ValueTask<RuleResult>(RuleResult.Failure(""));
@@ -151,6 +165,37 @@ namespace RuleWeaver.Tests
             var result = await engine.ValidateAsync(model);
 
             Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task Validate_NestedObject_DeveAchatarErrosComDotNotation()
+        {
+            var config = new Dictionary<string, string> {
+                {"RuleWeaver:Customer:BillingAddress:0:RuleName", "Nested"},
+
+                {"RuleWeaver:Address:Street:0:RuleName", "Required"},
+                {"RuleWeaver:Address:Street:0:RuleErrorMessage", "Street is mandatory"}
+            };
+
+            var engine = BuildEngine(config);
+
+            var model = new Customer
+            {
+                Name = "Rodrigo",
+                BillingAddress = new Address { Street = "" }
+            };
+
+            var result = await engine.ValidateAsync(model);
+
+            Assert.Single(result); 
+
+            var errorDetail = result.First();
+
+            Assert.Equal("BillingAddress.Street", errorDetail.Property);
+
+            var failure = errorDetail.Violations.First();
+            Assert.Equal("Required", failure.Rule);
+            Assert.Equal("Street is mandatory", failure.Message);
         }
     }
 }
