@@ -211,7 +211,10 @@ RuleWeaver returns a 400 Bad Request with a deterministic and frontend-friendly 
     },
     {
       "property": "Password",
-      "messages": ["Length must be at least 8 characters.", "Needs number"]
+      "messages": [
+        "Length must be at least 8 characters.",
+        "Needs at least one number"
+      ]
     }
   ]
 }
