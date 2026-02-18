@@ -260,6 +260,67 @@ Errors in nested properties are automatically flattened using Dot Notation, maki
 
 ---
 
+## 📚 Validating Collections
+
+RuleWeaver automatically detects if a property is a collection (`List`, `Array`, `IEnumerable`).
+When you apply the `"Nested"` rule to a list, the engine iterates through every item and tracks the index in the error output.
+
+### 1. The Model Structure
+
+```csharp
+public class ContactDto
+{
+    public string Type { get; set; } // e.g. "Email", "Phone"
+    public string Value { get; set; }
+}
+
+public class CustomerRequest
+{
+    public string Name { get; set; }
+    public List<ContactDto> Contacts { get; set; } // <--- List/Collection
+}
+```
+
+### 2. The Configuration
+
+Apply the "Nested" rule to the list property (Contacts). The engine handles the iteration logic.
+
+```json
+{
+  "RuleWeaver": {
+    "CustomerRequest": {
+      "Name": [{ "RuleName": "Required" }],
+      "Contacts": [
+        { "RuleName": "Nested" } // <--- Iterates and validates each item
+      ]
+    },
+    // Define rules for the item type (ContactDto)
+    "ContactDto": {
+      "Type": [{ "RuleName": "Required" }],
+      "Value": [{ "RuleName": "Required" }]
+    }
+  }
+}
+```
+
+### 3. The Result
+
+Errors in collections include the Index of the invalid item (e.g., [1]), allowing the frontend to pinpoint exactly which row in a grid or list has the error.
+
+```json
+{
+  "property": "Contacts[1].Value",
+  "violations": [
+    {
+      "rule": "Required",
+      "message": "This field is required."
+    }
+  ]
+}
+```
+
+---
+
 ## 📡 Response Format (API)
 
 RuleWeaver returns a 400 Bad Request with a deterministic and frontend-friendly JSON body.
@@ -319,3 +380,7 @@ Contributions are welcome! Feel free to open Issues or submit Pull Requests.
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+```
+
+```

@@ -5,6 +5,9 @@ on:
     branches:
       - master
 
+    paths-ignore:
+      - "**/*.md"
+
 jobs:
   build-test-pack-publish:
     runs-on: ubuntu-latest
