@@ -6,29 +6,25 @@ namespace RuleWeaver.Rules
     {
         public string Name => "MinValue";
 
-        public bool Validate(object? value, string[] args, out string errorMessage)
+        public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
         {
-            errorMessage = string.Empty;
-            if (value is null) return true;
+            if (value is null) return new ValueTask<RuleResult>(RuleResult.Success());
 
             if (args.Length == 0 || !double.TryParse(args[0], out var minVal))
             {
-                errorMessage = "Invalid configuration for MinValue.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("Invalid configuration for MinValue."));
             }
 
             if (double.TryParse(value.ToString(), out var currentVal))
             {
                 if (currentVal < minVal)
                 {
-                    errorMessage = $"Value must be at least {minVal}.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure($"Value must be at least {minVal}."));
                 }
-                return true;
+                return new ValueTask<RuleResult>(RuleResult.Success());
             }
 
-            errorMessage = "MinValue applies only to numeric types.";
-            return false;
+            return new ValueTask<RuleResult>(RuleResult.Failure("MinValue applies only to numeric types."));
         }
     }
 }

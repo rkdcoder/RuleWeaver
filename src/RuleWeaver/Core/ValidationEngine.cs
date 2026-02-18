@@ -13,7 +13,7 @@ namespace RuleWeaver.Core
             _rulesMap = rules.ToDictionary(r => r.Name, r => r, StringComparer.OrdinalIgnoreCase);
         }
 
-        public List<ValidationErrorDetail> Validate(object model)
+        public async Task<List<ValidationErrorDetail>> ValidateAsync(object model)
         {
             var errorsList = new List<ValidationErrorDetail>();
             if (model is null) return errorsList;
@@ -34,21 +34,19 @@ namespace RuleWeaver.Core
                 {
                     if (_rulesMap.TryGetValue(step.RuleName, out var ruleImplementation))
                     {
-                        if (!ruleImplementation.Validate(value, step.Args, out var technicalError))
+                        var result = await ruleImplementation.ValidateAsync(value, step.Args);
+
+                        if (!result.IsValid)
                         {
                             string finalMessage = !string.IsNullOrWhiteSpace(step.CustomErrorMessage)
                                 ? step.CustomErrorMessage
-                                : (!string.IsNullOrWhiteSpace(technicalError) ? technicalError : $"Error in {step.RuleName}");
+                                : (!string.IsNullOrWhiteSpace(result.ErrorMessage) ? result.ErrorMessage : $"Error in {step.RuleName}");
 
                             if (!currentPropertyMessages.Contains(finalMessage))
                             {
                                 currentPropertyMessages.Add(finalMessage);
                             }
                         }
-                    }
-                    else
-                    {
-
                     }
                 }
 

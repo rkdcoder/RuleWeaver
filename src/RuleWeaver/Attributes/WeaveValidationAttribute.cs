@@ -6,34 +6,37 @@ using RuleWeaver.Core;
 namespace RuleWeaver.Attributes
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public class WeaveValidationAttribute : ActionFilterAttribute
+    public class WeaveValidationAttribute : Attribute, IAsyncActionFilter
     {
-        public override void OnActionExecuting(ActionExecutingContext context)
+        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var engine = context.HttpContext.RequestServices.GetService<IValidationEngine>();
-            if (engine is null) return;
 
-            foreach (var argument in context.ActionArguments.Values)
+            if (engine is not null)
             {
-                if (argument is null) continue;
-
-                var type = argument.GetType();
-                if (type.IsClass && type != typeof(string))
+                foreach (var argument in context.ActionArguments.Values)
                 {
-                    var validationDetails = engine.Validate(argument);
+                    if (argument is null) continue;
 
-                    if (validationDetails.Count > 0)
+                    var type = argument.GetType();
+                    if (type.IsClass && type != typeof(string))
                     {
-                        context.Result = new BadRequestObjectResult(new
+                        var validationDetails = await engine.ValidateAsync(argument);
+
+                        if (validationDetails.Count > 0)
                         {
-                            Message = "Validation errors occurred.",
-                            Errors = validationDetails
-                        });
-                        return;
+                            context.Result = new BadRequestObjectResult(new
+                            {
+                                Message = "Validation errors occurred.",
+                                Errors = validationDetails
+                            });
+                            return;
+                        }
                     }
                 }
             }
-            base.OnActionExecuting(context);
+
+            await next();
         }
     }
 }

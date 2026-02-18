@@ -17,10 +17,9 @@ namespace RuleWeaver.Tests
         private class SilentFailRule : IValidationRule
         {
             public string Name => "SilentFail";
-            public bool Validate(object? value, string[] args, out string errorMessage)
+            public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
             {
-                errorMessage = "";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure(""));
             }
         }
 
@@ -45,7 +44,7 @@ namespace RuleWeaver.Tests
         }
 
         [Fact]
-        public void Validate_Nivel1_UsaMensagemDoJSON_Override()
+        public async Task Validate_Nivel1_UsaMensagemDoJSON_Override()
         {
             var config = new Dictionary<string, string> {
                 {"RuleWeaver:UserProfile:Age:0:RuleName", "MinValue"},
@@ -56,7 +55,7 @@ namespace RuleWeaver.Tests
             var engine = BuildEngine(config);
             var model = new UserProfile { Age = 10 };
 
-            var result = engine.Validate(model);
+            var result = await engine.ValidateAsync(model);
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
@@ -64,7 +63,7 @@ namespace RuleWeaver.Tests
         }
 
         [Fact]
-        public void Validate_Nivel2_UsaMensagemPadraoIngles()
+        public async Task Validate_Nivel2_UsaMensagemPadraoIngles()
         {
             var config = new Dictionary<string, string> {
                 {"RuleWeaver:UserProfile:Age:0:RuleName", "MinValue"},
@@ -74,7 +73,7 @@ namespace RuleWeaver.Tests
             var engine = BuildEngine(config);
             var model = new UserProfile { Age = 10 };
 
-            var result = engine.Validate(model);
+            var result = await engine.ValidateAsync(model);
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Age");
             Assert.NotNull(errorDetail);
@@ -82,7 +81,7 @@ namespace RuleWeaver.Tests
         }
 
         [Fact]
-        public void Validate_Nivel3_UsaFallbackGenerico()
+        public async Task Validate_Nivel3_UsaFallbackGenerico()
         {
             var config = new Dictionary<string, string> {
                 {"RuleWeaver:UserProfile:Username:0:RuleName", "SilentFail"}
@@ -91,7 +90,7 @@ namespace RuleWeaver.Tests
             var engine = BuildEngine(config);
             var model = new UserProfile { Username = "Test" };
 
-            var result = engine.Validate(model);
+            var result = await engine.ValidateAsync(model);
 
             var errorDetail = result.FirstOrDefault(x => x.Property == "Username");
             Assert.NotNull(errorDetail);
@@ -99,7 +98,7 @@ namespace RuleWeaver.Tests
         }
 
         [Fact]
-        public void Validate_DeveRetornarEstruturaDeArrayDeterministica()
+        public async Task Validate_DeveRetornarEstruturaDeArrayDeterministica()
         {
             var config = new Dictionary<string, string> {
                 {"RuleWeaver:UserProfile:Password:0:RuleName", "MinLength"},
@@ -113,7 +112,7 @@ namespace RuleWeaver.Tests
             var engine = BuildEngine(config);
             var model = new UserProfile { Password = "abc" };
 
-            var result = engine.Validate(model);
+            var result = await engine.ValidateAsync(model);
 
             Assert.Single(result);
 
@@ -126,7 +125,7 @@ namespace RuleWeaver.Tests
         }
 
         [Fact]
-        public void Validate_NaoDeveRetornarNada_SeValidacaoPassar()
+        public async Task Validate_NaoDeveRetornarNada_SeValidacaoPassar()
         {
             var config = new Dictionary<string, string> {
                 {"RuleWeaver:UserProfile:Age:0:RuleName", "MinValue"},
@@ -136,7 +135,7 @@ namespace RuleWeaver.Tests
             var engine = BuildEngine(config);
             var model = new UserProfile { Age = 25 };
 
-            var result = engine.Validate(model);
+            var result = await engine.ValidateAsync(model);
 
             Assert.Empty(result);
         }

@@ -6,39 +6,34 @@ namespace RuleWeaver.Rules
     {
         public string Name => "MaxLength";
 
-        public bool Validate(object? value, string[] args, out string errorMessage)
+        public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
         {
-            errorMessage = string.Empty;
-            if (value is null) return true;
+            if (value is null) return new ValueTask<RuleResult>(RuleResult.Success());
 
             if (args.Length == 0 || !int.TryParse(args[0], out var maxLen))
             {
-                errorMessage = "Invalid configuration for MaxLength.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("Invalid configuration for MaxLength."));
             }
 
             if (value is string str)
             {
                 if (str.Length > maxLen)
                 {
-                    errorMessage = $"Length must be at most {maxLen} characters.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure($"Length must be at most {maxLen} characters."));
                 }
-                return true;
+                return new ValueTask<RuleResult>(RuleResult.Success());
             }
 
             if (value is System.Collections.ICollection collection)
             {
                 if (collection.Count > maxLen)
                 {
-                    errorMessage = $"List must contain at most {maxLen} items.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure($"List must contain at most {maxLen} items."));
                 }
-                return true;
+                return new ValueTask<RuleResult>(RuleResult.Success());
             }
 
-            errorMessage = "MaxLength applies only to strings or collections.";
-            return false;
+            return new ValueTask<RuleResult>(RuleResult.Failure("MaxLength applies only to strings or collections."));
         }
     }
 }

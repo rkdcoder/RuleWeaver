@@ -6,22 +6,19 @@ namespace RuleWeaver.Rules
     {
         public string Name => "Required";
 
-        public bool Validate(object? value, string[] args, out string errorMessage)
+        public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
         {
-            errorMessage = string.Empty;
             if (value is null)
             {
-                errorMessage = "This field is required.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("This field is required."));
             }
 
             if (value is string str && string.IsNullOrWhiteSpace(str))
             {
-                errorMessage = "This field is required.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("This field is required."));
             }
 
-            return true;
+            return new ValueTask<RuleResult>(RuleResult.Success());
         }
     }
 }

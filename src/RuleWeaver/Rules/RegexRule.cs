@@ -7,32 +7,29 @@ namespace RuleWeaver.Rules
     {
         public string Name => "Regex";
 
-        public bool Validate(object? value, string[] args, out string errorMessage)
+        public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
         {
-            errorMessage = string.Empty;
-            if (value is null || string.IsNullOrEmpty(value.ToString())) return true;
+            if (value is null || string.IsNullOrEmpty(value.ToString()))
+                return new ValueTask<RuleResult>(RuleResult.Success());
 
             if (args.Length == 0)
             {
-                errorMessage = "Invalid Regex configuration.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("Invalid Regex configuration."));
             }
 
             try
             {
                 if (!Regex.IsMatch(value.ToString()!, args[0]))
                 {
-                    errorMessage = "The value does not match the required pattern.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure("The value does not match the required pattern."));
                 }
             }
             catch
             {
-                errorMessage = "Invalid Regex pattern.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("Invalid Regex pattern."));
             }
 
-            return true;
+            return new ValueTask<RuleResult>(RuleResult.Success());
         }
     }
 }

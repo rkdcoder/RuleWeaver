@@ -2,6 +2,6 @@
 {
     public interface IValidationEngine
     {
-        List<ValidationErrorDetail> Validate(object model);
+        Task<List<ValidationErrorDetail>> ValidateAsync(object model);
     }
 }

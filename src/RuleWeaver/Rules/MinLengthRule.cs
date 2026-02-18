@@ -6,39 +6,34 @@ namespace RuleWeaver.Rules
     {
         public string Name => "MinLength";
 
-        public bool Validate(object? value, string[] args, out string errorMessage)
+        public ValueTask<RuleResult> ValidateAsync(object? value, string[] args)
         {
-            errorMessage = string.Empty;
-            if (value is null) return true;
+            if (value is null) return new ValueTask<RuleResult>(RuleResult.Success());
 
             if (args.Length == 0 || !int.TryParse(args[0], out var minLen))
             {
-                errorMessage = "Invalid configuration for MinLength.";
-                return false;
+                return new ValueTask<RuleResult>(RuleResult.Failure("Invalid configuration for MinLength."));
             }
 
             if (value is string str)
             {
                 if (str.Length < minLen)
                 {
-                    errorMessage = $"Length must be at least {minLen} characters.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure($"Length must be at least {minLen} characters."));
                 }
-                return true;
+                return new ValueTask<RuleResult>(RuleResult.Success());
             }
 
             if (value is System.Collections.ICollection collection)
             {
                 if (collection.Count < minLen)
                 {
-                    errorMessage = $"List must contain at least {minLen} items.";
-                    return false;
+                    return new ValueTask<RuleResult>(RuleResult.Failure($"List must contain at least {minLen} items."));
                 }
-                return true;
+                return new ValueTask<RuleResult>(RuleResult.Success());
             }
 
-            errorMessage = "MinLength applies only to strings or collections.";
-            return false;
+            return new ValueTask<RuleResult>(RuleResult.Failure("MinLength applies only to strings or collections."));
         }
     }
 }
