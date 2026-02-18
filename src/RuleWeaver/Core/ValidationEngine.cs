@@ -35,16 +35,35 @@ namespace RuleWeaver.Core
                     {
                         if (value != null)
                         {
-                            var childErrors = await ValidateAsync(value);
-
-                            foreach (var childError in childErrors)
+                            if (value is System.Collections.IEnumerable collection && value is not string)
                             {
-                                var newPropertyName = $"{propPlan.PropertyName}.{childError.Property}";
+                                int index = 0;
+                                foreach (var item in collection)
+                                {
+                                    var itemErrors = await ValidateAsync(item);
 
-                                errorsList.Add(new ValidationErrorDetail(newPropertyName, childError.Violations));
+                                    foreach (var itemError in itemErrors)
+                                    {
+                                        var newPropertyName = $"{propPlan.PropertyName}[{index}].{itemError.Property}";
+
+                                        errorsList.Add(new ValidationErrorDetail(newPropertyName, itemError.Violations));
+                                    }
+                                    index++;
+                                }
+                            }
+                            else
+                            {
+                                var childErrors = await ValidateAsync(value);
+
+                                foreach (var childError in childErrors)
+                                {
+                                    var newPropertyName = $"{propPlan.PropertyName}.{childError.Property}";
+
+                                    errorsList.Add(new ValidationErrorDetail(newPropertyName, childError.Violations));
+                                }
                             }
                         }
-                        continue; 
+                        continue;
                     }
 
                     if (_rulesMap.TryGetValue(step.RuleName, out var ruleImplementation))

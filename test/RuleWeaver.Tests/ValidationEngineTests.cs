@@ -15,6 +15,12 @@ namespace RuleWeaver.Tests
             public string? Password { get; set; }
         }
 
+        private class OrderItem
+        {
+            public string Name { get; set; }
+            public decimal Price { get; set; }
+        }
+
         // --- DTOs Nested ---
         private class Address
         {
@@ -28,6 +34,10 @@ namespace RuleWeaver.Tests
             public Address? BillingAddress { get; set; }
         }
 
+        private class Order
+        {
+            public List<OrderItem> Items { get; set; } = new();
+        }
 
         private class SilentFailRule : IValidationRule
         {
@@ -196,6 +206,38 @@ namespace RuleWeaver.Tests
             var failure = errorDetail.Violations.First();
             Assert.Equal("Required", failure.Rule);
             Assert.Equal("Street is mandatory", failure.Message);
+        }
+
+        [Fact]
+        public async Task Validate_Collection_DeveGerarIndicesCorretos()
+        {
+            var config = new Dictionary<string, string> {
+        {"RuleWeaver:Order:Items:0:RuleName", "Nested"},
+
+        {"RuleWeaver:OrderItem:Name:0:RuleName", "Required"},
+        {"RuleWeaver:OrderItem:Price:0:RuleName", "MinValue"},
+        {"RuleWeaver:OrderItem:Price:0:RuleParameter", "1"}
+    };
+
+            var engine = BuildEngine(config);
+
+            var order = new Order();
+            order.Items.Add(new OrderItem { Name = "Laptop", Price = 2000 });
+            order.Items.Add(new OrderItem { Name = "Mouse", Price = 0 });
+            order.Items.Add(new OrderItem { Name = "Keyboard", Price = 100 });
+            order.Items.Add(new OrderItem { Name = "", Price = 50 });
+
+            var result = await engine.ValidateAsync(order);
+
+            Assert.Equal(2, result.Count);
+
+            var erroPreco = result.FirstOrDefault(x => x.Property == "Items[1].Price");
+            Assert.NotNull(erroPreco);
+            Assert.Equal("MinValue", erroPreco.Violations[0].Rule);
+
+            var erroNome = result.FirstOrDefault(x => x.Property == "Items[3].Name");
+            Assert.NotNull(erroNome);
+            Assert.Equal("Required", erroNome.Violations[0].Rule);
         }
     }
 }
