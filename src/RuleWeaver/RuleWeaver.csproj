@@ -6,35 +6,36 @@
     <Nullable>enable</Nullable>
 
     <PackageId>RuleWeaver</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Rodrigo Kmiecik</Authors>
     <Company>rkd.com.br</Company>
     <Product>RuleWeaver NuGet</Product>
 
-    <PackageDescription>Flexible and configuration-driven object validation engine for .NET. Provides a high-performance, cached execution plan that validates objects based on rules defined in appsettings.json. Returns a deterministic response with structured error arrays, handling standard constraints, custom business rules, and message overrides dynamically without hardcoded logic.</PackageDescription>
+    <PackageDescription>A high-performance, async-capable object validation engine for .NET. Features a cached execution plan and allows non-blocking database validations (via ValueTask) based on rules defined in appsettings.json. Returns deterministic, structured error arrays, ideal for modern APIs.</PackageDescription>
 
     <Description>
       RuleWeaver is a lightweight, enterprise-grade .NET library for declarative object validation.
-      The library uses fully externalized rules defined in appsettings.json and compiles them into a zero-allocation execution plan, eliminating repetitive "robotic" validation code.
+      It eliminates boilerplate code by compiling rules from appsettings.json into a cached execution plan.
 
-      Key characteristics:
-      Architecture based on Singleton Cache (Plan) and Scoped Engine (Execution)
-      Zero-allocation validation logic after initial warm-up (High Performance)
-      Automatic discovery of custom rules via Reflection (Extensible)
-      Deterministic, frontend-friendly error array output
-      Suitable for Web APIs, Worker Services and Console apps (.NET 10+)
-      Configuration-driven validation engine for .NET. Validates objects using external JSON rules, supports custom logic discovery, and returns structured, deterministic results with detailed error reporting.
+      Key features:
+      🚀 Architecture: Singleton Cache (Plan) + Scoped Engine (Execution)
+      ⚡ Performance: Low-allocation logic with zero I/O overhead for CPU-bound rules.
+      🔄 Async Support: Native ValueTask implementation for non-blocking I/O (Database checks).
+      🔌 Extensible: Automatic discovery of custom rules via Reflection.
+      🧩 Deterministic: Frontend-friendly structured error array output.
+
+      Suitable for Web APIs, Worker Services and Console apps (.NET 10+).
     </Description>
 
     <RepositoryUrl>https://github.com/rkdcoder/RuleWeaver</RepositoryUrl>
     <PackageProjectUrl>https://github.com/rkdcoder/RuleWeaver</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
-    <ReadMe>README.md</ReadMe>
+    <Readme>README.md</Readme>
 
     <Title>RuleWeaver</Title>
-    <Summary>Configuration-driven validation engine for .NET with cached execution plans and structured JSON output.</Summary>
-    <PackageTags>validation rules engine configuration appsettings json fluent enterprise architecture dotnet clean-code</PackageTags>
+    <Summary>Configuration-driven async validation engine for .NET with cached execution plans.</Summary>
+    <PackageTags>validation rules engine configuration appsettings json fluent enterprise architecture dotnet clean-code async</PackageTags>
 
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeSymbols>true</IncludeSymbols>
@@ -42,9 +43,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.9" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
